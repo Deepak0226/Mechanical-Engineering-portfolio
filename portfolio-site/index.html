@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mechanical Portfolio | FEA & CAD</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="./index.html">Mechanical-Engineering Portfolio</a>
+      <nav class="nav">
+        <a href="./index.html" class="nav-link active">Home</a>
+        <a href="./fea.html" class="nav-link">FEA</a>
+        <a href="./cad.html" class="nav-link">CAD</a>
+        <a href="./contact.html" class="nav-link">Contact</a>
+        <a href="./upload.html" class="nav-link">Viewer</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <h1 class="hero-title" id="heroTitle">Mechanical Engineering | FEA & CAD</h1>
+          <div class="hero-name" id="heroName"><h3>Deepak Sethi</h3></div>
+          <p class="hero-subtitle" id="heroTagline">Showcasing my CAD , CFD and FEA projects with a focus on practical engineering workflows.</p>
+          <div class="hero-actions">
+            <a class="btn" href="./fea.html">View FEA Projects</a>
+            <a class="btn btn-ghost" href="./cad.html">View CAD Projects</a>
+          </div>
+        </div>
+        <div class="hero-card">
+          <h3 class="hero-card-title">Quick Highlights</h3>
+          <ul class="bullets">
+            <li id="heroTools">Tools: ANSYS, SolidWorks, CATIA</li>
+            <li>Outputs: stress/strain, thermal maps, parametric models</li>
+            <li>Approach: clean modelling → analysis → results → documentation</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>About Me</h2>
+        <div class="two-col">
+          <div>
+            <p id="aboutText">
+              I am a B.Tech 2nd-year Mechanical Engineering student at NIT Jamshedpur.
+              This portfolio highlights my FEA and CAD work with brief explanations of the problem, modelling steps,
+              and key results.
+            </p>
+
+            <div class="card" style="margin-top:16px;">
+              <h3 style="margin:0 0 10px;">Education & Semesters</h3>
+              <div class="edu-grid" id="eduGrid" aria-label="Education and semesters">
+                <div class="edu-item">
+                  <div class="label">B.Tech Semester</div>
+                  <div class="value">1st</div>
+                  <div class="muted" style="margin-top:6px; font-size:13px;">Focused on theoritical knowledge,explored college and learnt basic cad software- AUTOCAD , gpa scored :- 8.09</div>
+                </div>
+                <div class="edu-item">
+                  <div class="label">B.Tech Semester</div>
+                  <div class="value">2nd</div>
+                  <div class="muted" style="margin-top:6px; font-size:13px;">Done multiple robotics projects in COGNITIO and OJASS'26, skill learned- SOLIDWORKS, ANSYS , gpa scored:-</div>
+                </div>
+                <div class="edu-item">
+                  <div class="label">B.Tech Semester</div>
+                  <div class="value">3rd</div>
+                  <div class="muted" style="margin-top:6px; font-size:13px;">Currently in 3rd semester</div>
+                </div>
+                <div class="edu-item">
+                  <div class="label">B.Tech Semester</div>
+                  <div class="value">4th</div>
+                  <div class="muted" style="margin-top:6px; font-size:13px;">(Add project link if any)</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="car-spotlight" aria-label="CFD analysis spotlight">
+              <div class="car-spotlight-inner">
+                <div class="car-spotlight-copy">
+                  <h3 class="text-gradient">CFD Flow (Sports Car)</h3>
+                  <p style="margin-top:6px;">
+                    Aerodynamic flow visualization for drag reduction—velocity contours, streamline patterns,
+                    and boundary layer insight.
+                  </p>
+                  <div class="muted" style="margin-top:8px; font-size:13px;">(Generalized CFD flow for an F1-style car)</div>
+                  <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+                    <span class="badge">CFD</span>
+                    <span class="badge">F1 CFD</span>
+                    <span class="badge">Flow Visualization</span>
+                    <span class="badge">ANSYS</span>
+                  </div>
+                </div>
+                <div class="car-spotlight-media">
+                  <img
+                    alt="CFD flow analysis diagram"
+                    src="https://media.formula1.com/image/upload/c_lfill,w_3392/q_auto/v1740000001/fom-website/2026%20regulations/2026_Explainer_FIA_Front_3_4_1920x1080.webp" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-panel">
+            <div class="info-row"><span class="k">Institute</span><span class="v" id="infoCollege">NIT Jamshedpur</span></div>
+            <div class="info-row"><span class="k">Branch</span><span class="v" id="infoBranch">Mechanical Engineering</span></div>
+            <div class="info-row"><span class="k">Current Year</span><span class="v" id="infoYear">2nd Year</span></div>
+            <div class="info-row"><span class="k">Focus</span><span class="v">FEA + CAD</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="section">
+      <div class="container">
+        <h2>CAD Models Showcase</h2>
+        <p class="muted">
+          View exported CAD models directly in the browser.
+          Best results with <b>.glb</b>, <b>.stl</b>, or <b>.obj</b>.
+        </p>
+        <p>
+          <a class="btn" href="./cad.html">Browse CAD Projects</a>
+        </p>
+        <div class="card" style="margin-top:14px; padding:14px;">
+          <div class="muted" style="line-height:1.6;">
+            Hover a CAD project button to preview details + image. Click to open the full model viewer.
+          </div>
+        </div>
+
+        <!-- Hover-based CAD showcase -->
+        <section class="section no-pad" style="padding-top:16px;">
+          <div class="container" style="padding:0;">
+            <div class="cad-tabs-wrap">
+              <div class="cad-tabs" id="cadTabs" role="tablist" aria-label="CAD projects">
+                <!-- buttons injected by site.js -->
+              </div>
+              <div class="cad-detail">
+                <div class="cad-detail-text" id="cadDetailText">
+                  <!-- injected -->
+                </div>
+                <div class="cad-detail-media">
+                  <img id="cadDetailImage" alt="CAD project preview" class="cad-detail-img" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="grid" id="cadShowcaseGrid" style="margin-top:14px; display:none;"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Featured Projects</h2>
+        <p class="muted">A small preview—visit the FEA and CAD pages for the full list.</p>
+        <div class="grid" id="featuredGrid"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+        <div class="container footer-inner">
+          <span>© <span id="footerYear"></span> Deepak Sethi</span>
+      <span class="muted">Built with HTML/CSS/JS • Data from projects.json</span>
+    </div>
+  </footer>
+
+  <script src="./site.js"></script>
+</body>
+</html>
+

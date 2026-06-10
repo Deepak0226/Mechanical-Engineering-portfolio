@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "name": "Deepak Sethi",
+    "college": "NIT Jamshedpur",
+    "branch": "Mechanical Engineering",
+    "tagline": "FEA & CAD Projects Portfolio"
+  },
+  "projects": [
+    {
+      "id": "fea-1",
+      "title": "FEA: Structural Analysis of a Beam",
+      "category": "FEA",
+      "tools": ["ANSYS"],
+      "year": "2024",
+      "summary": "Static structural analysis to study deflection and von Mises stress distribution under applied loads.",
+      "highlights": [
+        "Meshing strategy and mesh convergence",
+        "Boundary conditions & loading setup",
+        "Stress/strain post-processing"
+      ],
+      "link": "",
+      "image": ""
+    },
+    {
+      "id": "fea-2",
+      "title": "FEA: Thermal Analysis of an Assembly",
+      "category": "FEA",
+      "tools": ["ANSYS"],
+      "year": "2024",
+      "summary": "Steady-state thermal analysis to evaluate temperature gradients and heat flow.",
+      "highlights": [
+        "Material properties and thermal boundary conditions",
+        "Controlling mesh density for hotspots",
+        "Temperature & heat flux plots"
+      ],
+      "link": "",
+      "image": ""
+    },
+    {
+      "id": "cad-4",
+      "title": "CAD: Nissan GT-R Model",
+      "category": "CAD",
+      "tools": ["SolidWorks"],
+      "year": "2026",
+      "summary": "SolidWorks-based 3D modelling of a Nissan GT-R model with emphasis on accurate geometry, part organization, and assembly-ready components.",
+      "highlights": [
+        "Parametric body & components using sketches/features",
+        "Assembly structure with named parts for easy export",
+        "Exportable drawings and clean surface finishing"
+      ],
+      "link": "./models/nissan.stl",
+      "image": "./models/gtr-domain.png"
+    },
+    {
+      "id": "cad-3",
+      "title": "CAD: V6 Engine Assembly",
+      "category": "CAD",
+      "tools": ["SolidWorks"],
+      "year": "2026",
+      "summary": "A complete assembly of a V6 engine designed in SolidWorks to understand the mechanism of how power is produced in automotive vehicles.",
+      "highlights": [
+        "Lower Block & Internals: Pistons, crankshaft, and oil pan",
+        "Cylinder Head & Valvetrain: Camshaft and valve timing understanding",
+        "Air & Exhaust: Intake manifold, turbo/air routing, and exhaust path"
+      ],
+      "link": "./models/v6_engine.stl",
+      "image": "./models/v6 engine image.png"
+    },
+    
+    {
+      "id": "cad-1",
+      "title": "CAD: Parametric Bracket Design",
+      "category": "CAD",
+      "tools": ["SolidWorks"],
+      "year": "2023",
+      "summary": "Parametric CAD model with configurable dimensions and assembly-ready part design.",
+      "highlights": [
+        "Parametric sketches and feature tree",
+        "Constraints-based assembly planning",
+        "Exported drawings / dimensions"
+      ],
+      "link": "",
+      "image": ""
+    },
+    {
+      "id": "cad-2",
+      "title": "CAD: 3D Model of a Mechanism",
+      "category": "CAD",
+      "tools": ["CATIA"],
+      "year": "2023",
+      "summary": "Concept and modeling of a mechanical mechanism with assembly-level components.",
+      "highlights": [
+        "Surface/solid modeling techniques",
+        "Component organization and naming",
+        "Render-ready parts"
+      ],
+      "link": "",
+      "image": ""
+    }
+  ]
+}

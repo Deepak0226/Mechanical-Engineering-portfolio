@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FEA Projects | Mechanical Portfolio</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="./index.html">Mechanical-Engineering Portfolio</a>
+      <nav class="nav">
+        <a href="./index.html" class="nav-link">Home</a>
+        <a href="./fea.html" class="nav-link active">FEA</a>
+        <a href="./cad.html" class="nav-link">CAD</a>
+        <a href="./contact.html" class="nav-link">Contact</a>
+        <a href="./upload.html" class="nav-link">Viewer</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <h1>FEA Projects</h1>
+        <p class="muted">Finite Element analysis work using ANSYS. Filter by tool/year/tags.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="toolbar">
+          <div class="field">
+            <label for="q">Search</label>
+            <input id="q" type="search" placeholder="beam, thermal, stress..." />
+          </div>
+          <div class="field">
+            <label for="tool">Tool</label>
+            <select id="tool">
+              <option value="">All</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="year">Year</label>
+            <select id="year">
+              <option value="">All</option>
+            </select>
+          </div>
+          <div class="field field-actions">
+            <label class="sr-only" for="reset">Reset</label>
+            <button id="reset" class="btn btn-ghost" type="button">Reset</button>
+          </div>
+        </div>
+
+        <div class="grid" id="projectsGrid" data-category="FEA"></div>
+        <div id="emptyState" class="empty" hidden>
+          No projects match your filters.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+        <div class="container footer-inner">
+          <span>© <span id="footerYear"></span> Deepak Sethi</span>
+      <span class="muted">FEA projects</span>
+    </div>
+  </footer>
+
+  <script src="./site.js"></script>
+</body>
+</html>
+

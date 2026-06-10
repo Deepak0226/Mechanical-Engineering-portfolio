@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3D Viewer Upload | Mechanical Portfolio</title>
+  <link rel="stylesheet" href="./styles.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    .viewer-wrap {
+      height: 520px;
+      width: 100%;
+      background-color: #070b18;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+    #placeholder {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: rgba(18, 26, 51, 0.95);
+      color: var(--text); font-size: 1.1rem; z-index: 10; text-align: center; padding: 20px;
+    }
+    #canvasContainer { width: 100%; height: 100%; }
+    .status-bar {
+      margin-top: 10px; font-size: 0.9rem; color: var(--muted);
+      background: rgba(255,255,255,0.02); padding: 8px 12px;
+      border-radius: 6px; border: 1px solid var(--border);
+    }
+    .upload-box {
+      background: rgba(255,255,255,0.02);
+      border: 2px dashed var(--border);
+      border-radius: 12px; padding: 30px; text-align: center; margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="./index.html">Mechanical Portfolio</a>
+      <nav class="nav">
+        <a href="./index.html" class="nav-link">Home</a>
+        <a href="./fea.html" class="nav-link">FEA</a>
+        <a href="./cad.html" class="nav-link">CAD</a>
+        <a href="./contact.html" class="nav-link">Contact</a>
+        <a href="./upload.html" class="nav-link active">Viewer</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <h1>Local 3D File Sandbox Viewer</h1>
+        <p class="muted">Load local <b>.glb</b>, <b>.stl</b>, or <b>.obj</b> design outputs safely in sandbox storage.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="upload-box">
+          <input type="file" id="fileInput" accept=".glb,.gltf,.stl,.obj" style="display:none;" />
+          <button class="btn" onclick="document.getElementById('fileInput').click()">Select Local 3D File</button>
+          <p class="muted" style="margin-top:10px; font-size:0.85rem;">Files are processed entirely on your device locally.</p>
+        </div>
+
+        <div class="card" style="padding:14px;">
+          <div class="viewer-wrap" id="viewerWrap">
+            <div id="placeholder">
+              <div>Awaiting Data Model Upload Assignment</div>
+            </div>
+            <div id="canvasContainer"></div>
+          </div>
+          <div class="status-bar" id="viewerStatus">Standby. Ready to load local assets...</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© <span id="footerYear"></span> Deepak Sethi</span>
+    </div>
+  </footer>
+
+  <script>
+    let container = document.getElementById('canvasContainer');
+    let placeholder = document.getElementById('placeholder');
+    let fileInput = document.getElementById('fileInput');
+
+    let scene, camera, renderer, controls, currentModel;
+
+    // ─── GLB DDS-texture pre-processor ──────────────────────────────────────
+    // Some GLB files (e.g. exported from SolidWorks) embed textures as DDS
+    // instead of PNG/JPEG. Browsers cannot decode DDS via createImageBitmap,
+    // so GLTFLoader throws "The source image could not be decoded".
+    // This function detects those bufferViews and replaces them with a
+    // harmless gray PNG data-URI, keeping the BIN geometry chunk untouched.
+
+    const FALLBACK_PNG_URI = (() => {
+      const c = document.createElement('canvas');
+      c.width = 4; c.height = 4;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#888888';
+      ctx.fillRect(0, 0, 4, 4);
+      return c.toDataURL('image/png');
+    })();
+
+    function fixDDSTexturesInGLB(arrayBuffer) {
+      const DDS_MAGIC = 0x20534444; // 'DDS '
+      const GLTF_MAGIC = 0x46546C67; // 'glTF'
+
+      const hdr = new DataView(arrayBuffer);
+      if (hdr.getUint32(0, true) !== GLTF_MAGIC) return null; // not GLB
+
+      // ── Read JSON chunk ──────────────────────────────────────────────────
+      const jsonChunkLen  = hdr.getUint32(12, true);
+      const jsonChunkType = hdr.getUint32(16, true);
+      if (jsonChunkType !== 0x4E4F534A) return null; // not JSON type
+
+      const jsonText = new TextDecoder().decode(new Uint8Array(arrayBuffer, 20, jsonChunkLen));
+      const gltf = JSON.parse(jsonText);
+
+      // ── Read BIN chunk ───────────────────────────────────────────────────
+      const binStart   = 20 + jsonChunkLen;
+      const binLen     = hdr.getUint32(binStart, true);
+      const binType    = hdr.getUint32(binStart + 4, true);
+      const binData    = new Uint8Array(arrayBuffer, binStart + 8, binLen);
+
+      const bvs    = gltf.bufferViews || [];
+      const images = gltf.images     || [];
+      let changed  = false;
+
+      for (const img of images) {
+        if (img.bufferView === undefined) continue;
+        const bv  = bvs[img.bufferView];
+        if (!bv) continue;
+        const off = bv.byteOffset || 0;
+        if (binData.length < off + 4) continue;
+
+        const check = new DataView(binData.buffer, binData.byteOffset + off, 4);
+        if (check.getUint32(0, true) === DDS_MAGIC) {
+          // Swap the DDS bufferView reference for a safe data-URI
+          delete img.bufferView;
+          img.uri      = FALLBACK_PNG_URI;
+          img.mimeType = 'image/png';
+          changed = true;
+          console.warn('GLB pre-processor: replaced DDS texture with fallback PNG.');
+        }
+      }
+
+      if (!changed) return null; // nothing to fix
+
+      // ── Rebuild JSON chunk (BIN chunk is copied verbatim) ────────────────
+      const newJsonRaw    = new TextEncoder().encode(JSON.stringify(gltf));
+      const paddedJsonLen = (newJsonRaw.length + 3) & ~3;          // align to 4 bytes
+      const jsonPadded    = new Uint8Array(paddedJsonLen).fill(0x20); // pad with spaces
+      jsonPadded.set(newJsonRaw);
+
+      const newTotal = 12 + 8 + paddedJsonLen + 8 + binLen;
+      const out      = new ArrayBuffer(newTotal);
+      const dv       = new DataView(out);
+      const bytes    = new Uint8Array(out);
+
+      // Header
+      dv.setUint32(0, GLTF_MAGIC,   true);
+      dv.setUint32(4, 2,            true);
+      dv.setUint32(8, newTotal,     true);
+
+      // JSON chunk
+      dv.setUint32(12, paddedJsonLen,  true);
+      dv.setUint32(16, 0x4E4F534A,    true);  // 'JSON'
+      bytes.set(jsonPadded, 20);
+
+      // BIN chunk (byte-for-byte copy of original)
+      const binOut = 20 + paddedJsonLen;
+      dv.setUint32(binOut,     binLen,     true);
+      dv.setUint32(binOut + 4, 0x004E4942, true); // 'BIN\0'
+      bytes.set(binData, binOut + 8);
+
+      return new Blob([out], { type: 'model/gltf-binary' });
+    }
+    // ─── end of GLB pre-processor ────────────────────────────────────────────
+
+    function init() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0b1020);
+
+      camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 100000);
+      camera.position.set(100, 100, 100);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      dirLight.position.set(1, 2, 1);
+      scene.add(dirLight);
+
+      window.addEventListener('resize', () => {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+      });
+
+      animate();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if(controls) controls.update();
+      if(renderer) renderer.render(scene, camera);
+    }
+
+    function setStatus(msg, isError=false) {
+      const el = document.getElementById('viewerStatus');
+      if(el) {
+        el.innerHTML = msg;
+        el.style.color = isError ? '#ff6b6b' : '';
+      }
+    }
+
+    function frameObject(obj) {
+      const box = new THREE.Box3().setFromObject(obj);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+
+      // Shift model centre to world origin
+      obj.position.sub(center);
+
+      const fov = camera.fov * (Math.PI / 180);
+      const dist = (maxDim / 2) / Math.tan(fov / 2) * 2.0;
+
+      camera.position.set(dist, dist * 0.6, dist);
+      camera.near = maxDim * 0.001;
+      camera.far  = maxDim * 100;
+      camera.updateProjectionMatrix();
+      camera.lookAt(0, 0, 0);
+
+      controls.target.set(0, 0, 0);
+      controls.minDistance = maxDim * 0.01;
+      controls.maxDistance = maxDim * 20;
+      controls.update();
+    }
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if(!file) return;
+
+      placeholder.style.display = 'flex';
+      placeholder.innerHTML = `Loading: <b>${file.name}</b>...`;
+      setStatus('Loading file...');
+
+      if (currentModel) {
+        scene.remove(currentModel);
+        currentModel = null;
+      }
+
+      const ext = file.name.split('.').pop().toLowerCase();
+
+      // --- GLB / GLTF: pre-process for DDS textures, then load via createObjectURL ---
+      if (ext === 'glb' || ext === 'gltf') {
+        setStatus('Reading file...');
+
+        // Read as ArrayBuffer so we can inspect embedded textures
+        file.arrayBuffer().then(arrayBuffer => {
+          setStatus('Checking for incompatible textures...');
+
+          // Try to fix DDS textures (common in SolidWorks exports)
+          const fixedBlob = fixDDSTexturesInGLB(arrayBuffer);
+          const loadSource = fixedBlob || file;
+          if (fixedBlob) {
+            setStatus('Incompatible DDS textures detected — converting to PNG fallback...');
+          }
+
+          const objectURL = URL.createObjectURL(loadSource);
+          const draco = new THREE.DRACOLoader();
+          draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+          const loader = new THREE.GLTFLoader();
+          loader.setDRACOLoader(draco);
+          loader.load(
+            objectURL,
+            (gltf) => {
+              currentModel = gltf.scene;
+              currentModel.traverse(c => {
+                if (c.isMesh) {
+                  c.castShadow = true;
+                  if (c.material) c.material.side = THREE.DoubleSide;
+                }
+              });
+              scene.add(currentModel);
+              frameObject(currentModel);
+              placeholder.style.display = 'none';
+              setStatus(fixedBlob
+                ? 'GLB loaded. (Note: DDS textures were replaced with a gray fallback — geometry is accurate.)'
+                : 'GLB loaded successfully.');
+              URL.revokeObjectURL(objectURL);
+            },
+            (xhr) => {
+              if (xhr.total > 0) {
+                setStatus('Loading: ' + Math.round(xhr.loaded / xhr.total * 100) + '%');
+              }
+            },
+            (err) => {
+              placeholder.innerHTML = '<span style="color:#ff6b6b;">Failed to load GLB: ' + (err.message || err) + '</span>';
+              setStatus('GLB load error: ' + (err.message || err), true);
+              URL.revokeObjectURL(objectURL);
+            }
+          );
+        }).catch(err => {
+          placeholder.innerHTML = '<span style="color:#ff6b6b;">Failed to read file: ' + (err.message || err) + '</span>';
+          setStatus('File read error.', true);
+        });
+
+        return; // exit early — no FileReader needed
+      }
+
+      // --- STL / OBJ: use FileReader ---
+      const reader = new FileReader();
+
+      if (ext === 'stl') {
+        reader.readAsArrayBuffer(file);
+      } else {
+        reader.readAsText(file);
+      }
+
+      reader.onload = function(event) {
+        const contents = event.target.result;
+        try {
+          if (ext === 'stl') {
+            const loader = new THREE.STLLoader();
+            const geometry = loader.parse(contents);
+            geometry.computeVertexNormals();
+            const mat = new THREE.MeshStandardMaterial({ color: 0x7c5cff, roughness: 0.4, metalness: 0.3, side: THREE.DoubleSide });
+            currentModel = new THREE.Mesh(geometry, mat);
+            currentModel.castShadow = true;
+            scene.add(currentModel);
+            frameObject(currentModel);
+            placeholder.style.display = 'none';
+            setStatus('STL loaded successfully.');
+          }
+          else if (ext === 'obj') {
+            const loader = new THREE.OBJLoader();
+            currentModel = loader.parse(contents);
+            currentModel.traverse(c => {
+              if (c.isMesh) {
+                c.material = new THREE.MeshStandardMaterial({ color: 0x7c5cff, roughness: 0.5, side: THREE.DoubleSide });
+              }
+            });
+            scene.add(currentModel);
+            frameObject(currentModel);
+            placeholder.style.display = 'none';
+            setStatus('OBJ loaded successfully.');
+          }
+          else {
+            placeholder.innerHTML = `<span style="color:#ff6b6b;">Unsupported file type: .${ext}</span>`;
+            setStatus('Unsupported file type.', true);
+          }
+        } catch (err) {
+          console.error(err);
+          placeholder.innerHTML = `<span style="color:#ff6b6b;">Failed to parse model: ${err.message || err}</span>`;
+          setStatus('Error loading model.', true);
+        }
+      };
+
+      reader.onerror = function() {
+        placeholder.innerHTML = `<span style="color:#ff6b6b;">Failed to read file.</span>`;
+        setStatus('File read error.', true);
+      };
+    });
+
+    document.getElementById('footerYear').textContent = new Date().getFullYear();
+    init();
+  </script>
+</body>
+</html>
