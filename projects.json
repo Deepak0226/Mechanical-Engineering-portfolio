@@ -63,7 +63,7 @@
         "Cylinder Head & Valvetrain: Camshaft and valve timing understanding",
         "Air & Exhaust: Intake manifold, turbo/air routing, and exhaust path"
       ],
-      "link": "./models/v6_engine.stl",
+      "link": "./models/V6_engine.stl",
       "image": "./models/v6 engine image.png"
     },
     
